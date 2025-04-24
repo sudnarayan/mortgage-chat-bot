@@ -19,13 +19,13 @@ except ModuleNotFoundError:
     STREAMLIT_AVAILABLE = False
 
 try:
-    import openai
-except ModuleNotFoundError:
+    from openai import OpenAI
+except ImportError:
     print("OpenAI module is not available. Please run: pip install openai")
     sys.exit(1)
 
 # --- OpenAI Key ---
-openai.api_key = os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 if not STREAMLIT_AVAILABLE:
     logging.warning("Streamlit is not available. This environment does not support CLI mode due to I/O restrictions.")
@@ -95,7 +95,7 @@ if file:
 
         try:
             with st.spinner("Thinking..."):
-                response = openai.ChatCompletion.create(
+                response = client.chat.completions.create(
                     model="gpt-4",
                     messages=[
                         {"role": "system", "content": "You analyze mortgage data."},
