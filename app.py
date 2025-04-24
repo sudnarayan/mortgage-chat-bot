@@ -96,7 +96,7 @@ if file:
         try:
             with st.spinner("Thinking..."):
                 response = client.chat.completions.create(
-                    model="gpt-4",
+                    model="gpt-3.5-turbo",
                     messages=[
                         {"role": "system", "content": "You analyze mortgage data."},
                         {"role": "user", "content": prompt}
@@ -108,3 +108,4 @@ if file:
             st.error(f"Error: {e}")
 else:
     st.info("Upload a CSV file to get started.")
+
