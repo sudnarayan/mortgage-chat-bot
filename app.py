@@ -60,13 +60,19 @@ if uploaded_file is not None:
     st.dataframe(df.head(10))
 
     st.markdown("""
-    ## 🧠 Quick AI Insight (MVP Feature!)
+    ## 🧠 Quick Mortgage Insights
     """)
-    st.info(f"This CSV contains {df.shape[0]} rows and {df.shape[1]} columns.")
+    st.info(f"This dataset contains {df.shape[0]} loans across {df.shape[1]} features.")
+
     if 'loan_amount' in df.columns:
-        st.success(f"Average Loan Amount: ${df['loan_amount'].mean():,.2f}")
+        avg_loan = df['loan_amount'].mean()
+        max_loan = df['loan_amount'].max()
+        min_loan = df['loan_amount'].min()
+        st.success(f"Average Loan Amount: ${avg_loan:,.2f}")
+        st.success(f"Highest Loan Amount: ${max_loan:,.2f}")
+        st.success(f"Lowest Loan Amount: ${min_loan:,.2f}")
     else:
-        st.warning("Tip: Include a 'loan_amount' column to get more insights!")
+        st.warning("Tip: Include a 'loan_amount' column to unlock full mortgage insights!")
 
 st.markdown("""
 <div class="footer-text">
@@ -75,5 +81,6 @@ Built by a solo maker. Feedback makes it better. 🛠️
 """, unsafe_allow_html=True)
 
 rain(emoji="🎯", font_size=24, falling_speed=5, animation_length="infinite")
+
 
 
