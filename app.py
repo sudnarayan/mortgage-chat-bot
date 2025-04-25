@@ -1,6 +1,6 @@
-
 import streamlit as st
 from streamlit_extras.let_it_rain import rain
+import pandas as pd
 
 st.set_page_config(page_title="Mortgage Insights Bot – Early Access", layout="centered")
 
@@ -49,9 +49,21 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 st.markdown("""
+## 📄 Try Uploading Your Mortgage CSV
+""")
+
+uploaded_file = st.file_uploader("Upload your CSV file", type=["csv"])
+
+if uploaded_file is not None:
+    st.success("✅ File uploaded successfully!")
+    df = pd.read_csv(uploaded_file)
+    st.dataframe(df.head(10))
+
+st.markdown("""
 <div class="footer-text">
 Built by a solo maker. Feedback makes it better. 🛠️
 </div>
 """, unsafe_allow_html=True)
 
 rain(emoji="🎯", font_size=24, falling_speed=5, animation_length="infinite")
+
