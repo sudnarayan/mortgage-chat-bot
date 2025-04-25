@@ -28,9 +28,9 @@ Upload your CSV, ask questions, and get instant answers.
 </p>
 """, unsafe_allow_html=True)
 
-# 🔗 Embed Google Form
+# 🔗 Embed updated working Google Form
 st.components.v1.html("""
-<iframe src="https://docs.google.com/forms/d/e/1FAIpQLSd0cTestBotFormLiveResponseEmbedExample/viewform?embedded=true" 
+<iframe src="https://docs.google.com/forms/d/e/1FAIpQLSfuzQAKXWhTociKZ-cS-M0XPMVj_AQuNE7EMXwv7JTrb1mJTA/viewform?embedded=true" 
         width="700" height="900" frameborder="0" marginheight="0" marginwidth="0">
 Loading…
 </iframe>
