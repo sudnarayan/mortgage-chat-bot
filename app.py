@@ -25,23 +25,6 @@ st.markdown("""
         font-size: 0.9rem; 
         color: #777;
     }
-    .cta-button {
-        display: flex;
-        justify-content: center;
-        margin-top: 2rem;
-    }
-    .stButton button {
-        background-color: #1a73e8;
-        color: white;
-        border: none;
-        padding: 0.8rem 2rem;
-        border-radius: 0.5rem;
-        font-size: 1.1rem;
-        cursor: pointer;
-    }
-    .stButton button:hover {
-        background-color: #1558b0;
-    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -59,11 +42,12 @@ Limited access — reserve your spot now!
 """, unsafe_allow_html=True)
 
 st.markdown("""
-<div class="cta-button">
-    <a href="https://docs.google.com/forms/d/e/1FAIpQLSfuzQAKXWhTociKZ-cS-M0XPMVj_AQuNE7EMXwv7JTrb1mJTA/viewform?embedded=true" target="_blank">
-        <button>Request Early Access</button>
-    </a>
-</div>
+<form action="https://formsubmit.co/sudnarayan@hotmail.com" method="POST">
+    <input type="text" name="name" placeholder="Your Name" required style="width: 100%; padding: 10px; margin-bottom: 10px;">
+    <input type="email" name="email" placeholder="Your Email" required style="width: 100%; padding: 10px; margin-bottom: 10px;">
+    <textarea name="message" placeholder="What do you hope this bot can solve for you?" required style="width: 100%; padding: 10px; margin-bottom: 10px;"></textarea>
+    <button type="submit" style="background-color: #1a73e8; color: white; padding: 10px 20px; border: none; border-radius: 5px;">Request Early Access</button>
+</form>
 """, unsafe_allow_html=True)
 
 st.markdown("""
