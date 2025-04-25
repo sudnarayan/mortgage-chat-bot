@@ -1,9 +1,10 @@
 
 import streamlit as st
-from streamlit_extras.animated_headline import animated_headline
 from streamlit_extras.let_it_rain import rain
 
 st.set_page_config(page_title="Mortgage Insights Bot – Early Access", layout="centered")
+
+st.title("🚀 Early Access Open: Mortgage Insights Bot")
 
 st.markdown("""
 <style>
@@ -27,11 +28,6 @@ st.markdown("""
     }
 </style>
 """, unsafe_allow_html=True)
-
-animated_headline(
-    "Early Access Open 🚀",
-    ["Instant Mortgage Insights.", "Smarter Loan Decisions.", "Be the First to Know."]
-)
 
 st.markdown("""
 <div class="lead-text">
