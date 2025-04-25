@@ -41,8 +41,10 @@ Limited access — reserve your spot now!
 </div>
 """, unsafe_allow_html=True)
 
-st.markdown("""
-<form action="https://formsubmit.co/sudnarayan@hotmail.com" method="POST">
+formsubmit_email = st.secrets["FORM_SUBMIT_EMAIL"]
+
+st.markdown(f"""
+<form action="https://formsubmit.co/{formsubmit_email}" method="POST">
     <input type="text" name="name" placeholder="Your Name" required style="width: 100%; padding: 10px; margin-bottom: 10px;">
     <input type="email" name="email" placeholder="Your Email" required style="width: 100%; padding: 10px; margin-bottom: 10px;">
     <textarea name="message" placeholder="What do you hope this bot can solve for you?" required style="width: 100%; padding: 10px; margin-bottom: 10px;"></textarea>
