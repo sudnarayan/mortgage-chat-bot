@@ -59,6 +59,15 @@ if uploaded_file is not None:
     df = pd.read_csv(uploaded_file)
     st.dataframe(df.head(10))
 
+    st.markdown("""
+    ## 🧠 Quick AI Insight (MVP Feature!)
+    """)
+    st.info(f"This CSV contains {df.shape[0]} rows and {df.shape[1]} columns.")
+    if 'loan_amount' in df.columns:
+        st.success(f"Average Loan Amount: ${df['loan_amount'].mean():,.2f}")
+    else:
+        st.warning("Tip: Include a 'loan_amount' column to get more insights!")
+
 st.markdown("""
 <div class="footer-text">
 Built by a solo maker. Feedback makes it better. 🛠️
@@ -66,4 +75,5 @@ Built by a solo maker. Feedback makes it better. 🛠️
 """, unsafe_allow_html=True)
 
 rain(emoji="🎯", font_size=24, falling_speed=5, animation_length="infinite")
+
 
