@@ -4,7 +4,7 @@ import pandas as pd
 
 st.set_page_config(page_title="Mortgage Insights Bot – Early Access", layout="centered")
 
-st.title("🚀 Early Access Open: Mortgage Insights Bot")
+st.title("🚀 Mortgage Insights Bot – Early Access")
 
 st.markdown("""
 <style>
@@ -64,6 +64,7 @@ formsubmit_email = st.secrets["FORM_SUBMIT_EMAIL"]
 
 st.markdown(f"""
 <form action="https://formsubmit.co/{formsubmit_email}" method="POST">
+    <input type="hidden" name="_autoresponse" value="Thanks for signing up for Mortgage Insights Bot Early Access! We will contact you shortly.">
     <input type="text" name="name" placeholder="Your Name" required style="width: 100%; padding: 10px; margin-bottom: 10px;">
     <input type="email" name="email" placeholder="Your Email" required style="width: 100%; padding: 10px; margin-bottom: 10px;">
     <textarea name="message" placeholder="What do you hope this bot can solve for you?" required style="width: 100%; padding: 10px; margin-bottom: 10px;"></textarea>
@@ -97,7 +98,7 @@ if uploaded_file is not None:
     else:
         st.warning("Tip: Include a 'loan_amount' column to unlock full mortgage insights!")
 
-rain(emoji="🎯", font_size=0)  # stop rain
+rain(emoji="🎯", font_size=0)
 
 st.markdown("""
 ## 💰 Early Access Pricing Plans
