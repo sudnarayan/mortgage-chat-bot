@@ -4,7 +4,11 @@ import pandas as pd
 
 st.set_page_config(page_title="Mortgage Insights Bot – Early Access", layout="centered")
 
-st.title("🚀 Mortgage Insights Bot – Early Access")
+st.markdown("""
+<h1 style='text-align: center; font-size: 2.5rem; color: #1a73e8;'>
+🚀 Mortgage Insights Bot – Early Access
+</h1>
+""", unsafe_allow_html=True)
 
 st.markdown("""
 <style>
