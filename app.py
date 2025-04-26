@@ -5,20 +5,15 @@ import pandas as pd
 st.set_page_config(page_title="Mortgage Insights Bot – Early Access", layout="centered")
 
 st.markdown("""
-<h1 style='text-align: center; font-size: 2.5rem; color: #1a73e8; margin-bottom: 1rem;'>
-🚀 Mortgage Insights Bot – Early Access
-</h1>
+<h1 style='text-align: center; font-size: 2.8rem; color: #1a73e8; margin-bottom: 1rem;'>🏠 Unlock Mortgage Insights Instantly</h1>
+<p style='text-align: center; font-size: 1.2rem; color: #555;'>Upload your mortgage CSV. Get instant AI-powered insights. Make better decisions faster.</p>
+<div style='text-align: center; margin-top: 2rem;'>
+<a href="#form" style='background-color: #1a73e8; color: white; padding: 12px 25px; text-decoration: none; border-radius: 8px; font-size: 1.1rem;'>🚀 Request Early Access Now</a>
+</div>
 """, unsafe_allow_html=True)
 
 st.markdown("""
 <style>
-    .big-title {
-        font-size: 2.5rem;
-        font-weight: 800;
-        color: #1a73e8;
-        margin-bottom: 0.75rem;
-        text-align: center;
-    }
     .lead-text {
         font-size: 1.2rem;
         margin-bottom: 2rem;
@@ -57,7 +52,7 @@ st.markdown("""
 rain(emoji="🎯", font_size=24, falling_speed=5, animation_length=30)
 
 st.markdown("""
-<div class="lead-text">
+<div id="form" class="lead-text">
 We’re inviting 10 early users to test our AI-powered mortgage insights bot.<br>
 Upload your CSV, ask questions, and get instant answers.<br>
 Limited access — reserve your spot now!
@@ -69,9 +64,9 @@ formsubmit_email = st.secrets["FORM_SUBMIT_EMAIL"]
 st.markdown(f"""
 <form action="https://formsubmit.co/{formsubmit_email}" method="POST">
     <input type="hidden" name="_autoresponse" value="Thanks for signing up for Mortgage Insights Bot Early Access! We will contact you shortly.">
-    <input type="text" name="name" placeholder="Your Name" required style="width: 100%; padding: 10px; margin-bottom: 10px;">
-    <input type="email" name="email" placeholder="Your Email" required style="width: 100%; padding: 10px; margin-bottom: 10px;">
-    <textarea name="message" placeholder="What do you hope this bot can solve for you?" required style="width: 100%; padding: 10px; margin-bottom: 10px;"></textarea>
+    <input type="text" name="name" placeholder="Your Name" required style="width: 100%; padding: 10px; margin-bottom: 10px;'>
+    <input type="email" name="email" placeholder="Your Email" required style="width: 100%; padding: 10px; margin-bottom: 10px;'>
+    <textarea name="message" placeholder="What do you hope this bot can solve for you?" required style="width: 100%; padding: 10px; margin-bottom: 10px;'></textarea>
     <button type="submit" style="background-color: #1a73e8; color: white; padding: 10px 20px; border: none; border-radius: 5px;'>Request Early Access</button>
 </form>
 """, unsafe_allow_html=True)
@@ -126,6 +121,6 @@ st.markdown("""
 
 st.markdown("""
 <div class="footer-text">
-Built by a solo maker. Feedback makes it better. 🛠️
+Built by a solo maker in 🇨🇦. Feedback makes it better. 🛠️
 </div>
 """, unsafe_allow_html=True)
