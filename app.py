@@ -5,7 +5,7 @@ import pandas as pd
 st.set_page_config(page_title="Mortgage Insights Bot – Early Access", layout="centered")
 
 st.markdown("""
-<h1 style='text-align: center; font-size: 2.5rem; color: #1a73e8;'>
+<h1 style='text-align: center; font-size: 2.5rem; color: #1a73e8; margin-bottom: 1rem;'>
 🚀 Mortgage Insights Bot – Early Access
 </h1>
 """, unsafe_allow_html=True)
@@ -72,7 +72,7 @@ st.markdown(f"""
     <input type="text" name="name" placeholder="Your Name" required style="width: 100%; padding: 10px; margin-bottom: 10px;">
     <input type="email" name="email" placeholder="Your Email" required style="width: 100%; padding: 10px; margin-bottom: 10px;">
     <textarea name="message" placeholder="What do you hope this bot can solve for you?" required style="width: 100%; padding: 10px; margin-bottom: 10px;"></textarea>
-    <button type="submit" style="background-color: #1a73e8; color: white; padding: 10px 20px; border: none; border-radius: 5px;">Request Early Access</button>
+    <button type="submit" style="background-color: #1a73e8; color: white; padding: 10px 20px; border: none; border-radius: 5px;'>Request Early Access</button>
 </form>
 """, unsafe_allow_html=True)
 
