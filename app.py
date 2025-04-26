@@ -26,6 +26,26 @@ st.markdown("""
         font-size: 0.9rem; 
         color: #777;
     }
+    .pricing-table {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        margin-top: 2rem;
+        flex-wrap: wrap;
+    }
+    .pricing-card {
+        background: #f1f3f4;
+        padding: 1.5rem;
+        border-radius: 1rem;
+        text-align: center;
+        width: 250px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+    }
+    .price {
+        font-size: 2rem;
+        margin: 1rem 0;
+        color: #1a73e8;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -75,12 +95,33 @@ if uploaded_file is not None:
         st.warning("Tip: Include a 'loan_amount' column to unlock full mortgage insights!")
 
 st.markdown("""
+## 💰 Early Access Pricing Plans
+<div class="pricing-table">
+    <div class="pricing-card">
+        <h3>Starter</h3>
+        <div class="price">$5/mo</div>
+        <p>CSV Uploads</p>
+        <p>Basic Mortgage Insights</p>
+        <p>Email Support</p>
+    </div>
+    <div class="pricing-card">
+        <h3>Pro</h3>
+        <div class="price">$10/mo</div>
+        <p>Advanced Risk Analysis</p>
+        <p>Early Feature Access</p>
+        <p>Priority Email Support</p>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+st.markdown("""
 <div class="footer-text">
 Built by a solo maker. Feedback makes it better. 🛠️
 </div>
 """, unsafe_allow_html=True)
 
 rain(emoji="🎯", font_size=24, falling_speed=5, animation_length="infinite")
+
 
 
 
