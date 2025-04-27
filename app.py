@@ -8,18 +8,56 @@ from datetime import datetime
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-import json  # Import the json module
-import google.auth.transport.requests  # Import for making requests
-from google.oauth2 import service_account # Import service account
+import json
+import google.auth.transport.requests
+from google.oauth2 import service_account
+import streamlit.components.v1 as components
+
+# --- SEO + Landing Page Head Injection ---
+components.html(
+    """
+    <head>
+        <title>Mortgage Chatbot Canada - Free Mortgage Help 24/7</title>
+        <meta name="description" content="Talk to Canada's smartest Mortgage Chatbot. Free advice, simple guidance, available 24/7! Get mortgage answers instantly.">
+        <meta name="keywords" content="Mortgage Chatbot Canada, Mortgage Help, Home Loans Canada, Mortgage Rates, Mortgage Questions, Mortgage Tips, Mortgage Chat Assistant, Streamlit Mortgage Bot">
+        <meta name="author" content="CSV Wizard">
+    </head>
+    """,
+    height=0,
+)
+
+# Streamlit app config
+st.set_page_config(page_title="🏠 Mortgage Chatbot (Streaming + Email Capture)", layout="wide")
+
+# --- Landing Page Hero Content ---
+st.title("🏠 Mortgage Chatbot Canada")
+
+st.markdown("""
+# 🏡 Welcome to Canada's Smart Mortgage Chatbot!
+
+**Your free, instant guide for home loans, mortgage rates, and more.**
+
+---
+## Why Choose Us?
+- 💬 Get mortgage answers in real-time
+- 🏡 Trusted advice for Canadian home buyers
+- ⏱️ Available 24/7, no waiting
+- 📈 Save time and find better deals
+
+---
+### 🚀 Start Chatting Below!
+""")
+
+st.markdown("---")  # Divider
 
 # Setup OpenAI client
 client = openai.OpenAI(
     api_key=st.secrets["OPENAI_API_KEY"]
 )
 
-# --- OAuth 2.0 for Google Sheets ---
-SCOPES = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive.file"]  # Added drive.file scope
-CLIENT_SECRET_FILE = "client_secret.json"  # Name of your client secret file
+# --- OAuth 2.0 Setup for Google Sheets ---
+SCOPES = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive.file"]
+CLIENT_SECRET_FILE = "client_secret.json"
 TOKEN_PATH = "token.json"
 
 def get_credentials_oauth():
@@ -32,26 +70,24 @@ def get_credentials_oauth():
                 creds.refresh(google.auth.transport.requests.Request())
             except Exception as e:
                 st.error(f"Error refreshing credentials: {e}")
-                os.remove(TOKEN_PATH)  # Remove the invalid token file
-                creds = None  # Force re-authorization
+                os.remove(TOKEN_PATH)
+                creds = None
         if not creds:
-            #  Use json.loads to parse the service account info, and write to client_secret.json
             client_secret_info = json.loads(st.secrets["GOOGLE_SERVICE_ACCOUNT_JSON"])
-            # Check the type of client.  If it is a service account, use service account.
             if client_secret_info['type'] == 'service_account':
                 try:
                     creds = service_account.Credentials.from_service_account_info(client_secret_info, scopes=SCOPES)
                 except Exception as e:
                     st.error(f"Error creating service account credentials: {e}")
                     return None
-            else: # Else use InstalledAppFlow
+            else:
                 with open(CLIENT_SECRET_FILE, 'w') as f:
-                    json.dump(client_secret_info, f, indent=4) #indent for readability
+                    json.dump(client_secret_info, f, indent=4)
                 flow = InstalledAppFlow.from_client_secrets_file(
                     CLIENT_SECRET_FILE, SCOPES)
-                flow.redirect_uri = "http://localhost:8501"  # Or your Streamlit Cloud URL - important for the auth flow
+                flow.redirect_uri = "http://localhost:8501"
                 auth_url, _ = flow.authorization_url()
-                st.session_state.auth_url = auth_url #save auth url to session
+                st.session_state.auth_url = auth_url
                 st.write(f'Please go to this URL to authorize: {auth_url}')
                 code = st.text_input("Enter the authorization code:")
                 if code:
@@ -65,7 +101,7 @@ def get_credentials_oauth():
                         st.error(f"Error fetching token: {e}")
                         return None
                 else:
-                    return None #Stop if code is not provided
+                    return None
     return creds
 
 def connect_to_sheet(creds):
@@ -112,19 +148,6 @@ def send_thank_you_email(to_email):
         st.error(f"Failed to send Thank You email: {e}")
         return False
 
-# Streamlit app config
-# SEO: Set a more descriptive page title
-st.set_page_config(
-    page_title="Canadian Mortgage Chatbot | Get Expert Answers Fast",
-    page_icon="🏠",  # You can use an emoji or a URL to a favicon
-    layout="wide",
-)
-# SEO: Main heading with relevant keywords
-st.title("🏠 Mortgage Chatbot (Canada) - Your AI-Powered Mortgage Expert")
-
-# SEO: Subheading with keyword variation
-st.markdown("## Get Instant Answers to Your Canadian Mortgage Questions")
-
 # Session State Initialization
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -132,7 +155,7 @@ if "email_captured" not in st.session_state:
     st.session_state.email_captured = False
 if "email_prompted" not in st.session_state:
     st.session_state.email_prompted = False
-if "user_email" not in st.session_state:  # Store user email
+if "user_email" not in st.session_state:
     st.session_state.user_email = ""
 if "credentials" not in st.session_state:
     st.session_state.credentials = None
@@ -160,7 +183,6 @@ def stream_gpt_response(prompt):
 if prompt := st.chat_input("Ask me anything about mortgages!"):
     st.session_state.messages.append({"role": "user", "content": prompt})
 
-    # Stream Assistant Response
     full_response = ""
     for chunk in stream_gpt_response(prompt):
         full_response += chunk
@@ -178,53 +200,35 @@ for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-        # Handle Email Input Form
         if "**🎯 Would you like personalized mortgage tips?" in message["content"] and not st.session_state.email_captured:
             email = st.text_input("Enter your email address:", key="email_input")
             if email and "@" in email:
                 st.success(f"Thanks! We've saved your email: {email}")
                 st.session_state.email_captured = True
-                st.session_state.user_email = email  # Store the email
+                st.session_state.user_email = email
 
-                #  Use OAuth to connect to Google Sheets and append the row.
                 creds = get_credentials_oauth()
                 if creds:
                     sheet = connect_to_sheet(creds)
                     if sheet:
                         try:
-                            # Use the sheet ID from the provided URL
                             sheet_id = "17CITdwS0z4Lhzl-ZPVCe0Dwukl1fQan2z1gnhabVSpI"
                             sheet.values().append(spreadsheetId=sheet_id, range='Sheet1', valueInputOption='RAW', body={'values': [[email, str(datetime.now())]]}).execute()
                             send_thank_you_email(email)
                         except Exception as e:
-                            st.error(f"Failed to save email: {e}")
+                            st.error(f"Failed to save email or send Thank You email: {e}")
                     else:
                         st.error("Failed to connect to Google Sheets using OAuth.")
                 else:
                     st.error("Failed to obtain Google credentials using OAuth.")
-                st.session_state.messages.append({"role": "assistant", "content": "Thank you for providing your email!"})
 
+                st.session_state.messages.append({"role": "assistant", "content": "Thank you for providing your email!"})
             elif email:
                 st.warning("Please enter a valid email address.")
 
-# Display email only after it has been captured
+# Display email after capture
 if st.session_state.email_captured:
     st.write(f"Your email: {st.session_state.user_email}")
-
-# SEO: Add a section with more details about the chatbot
-st.markdown("""
-## About Our Mortgage Chatbot
-
-Our AI-powered chatbot is designed to provide you with fast, accurate answers to your Canadian mortgage questions.  Whether you're a first-time homebuyer or looking to refinance, we can help.  We cover a wide range of topics, including:
-
-* Mortgage rates and calculations
-* Pre-approval and qualification requirements
-* Refinancing options
-* Mortgage terms and conditions
-* Canadian mortgage regulations
-
-We're here to help you navigate the complexities of the Canadian mortgage market.  Ask us anything!
-""")
 
 # Footer
 st.markdown("---")
