@@ -97,6 +97,18 @@ if uploaded_file is not None:
     else:
         st.warning("Tip: Include a 'loan_amount' column to unlock full mortgage insights!")
 
+    st.markdown("""
+    ## ✨ We'd love your feedback!
+    """)
+    with st.form("feedback_form"):
+        satisfaction = st.slider("How helpful were the insights?", 1, 5, 3)
+        confusion = st.text_input("What confused you the most?")
+        recommend = st.radio("Would you recommend us to others?", ["Yes", "No"])
+        submitted = st.form_submit_button("Submit Feedback")
+
+        if submitted:
+            st.success("🎉 Thanks for your feedback! You're helping us build better!")
+
 rain(emoji="🎯", font_size=0)
 
 st.markdown("""
