@@ -8,6 +8,7 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from io import StringIO
 
+
 def connect_to_sheet():
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
     json_creds = json.loads(st.secrets["GOOGLE_SERVICE_ACCOUNT_JSON"])
@@ -15,6 +16,8 @@ def connect_to_sheet():
     client = gspread.authorize(creds)
     sheet = client.open("Mortgage Leads").sheet1
     return sheet
+
+
 
 
 # Setup OpenAI client
