@@ -6,6 +6,10 @@ from io import StringIO
 from oauth2client.service_account import ServiceAccountCredentials
 from datetime import datetime
 
+# (commented out extras to avoid missing module error)
+# from streamlit_extras.animated_headline import animated_headline
+# from streamlit_extras.let_it_rain import rain
+
 # Setup OpenAI client
 client = openai.OpenAI(
     api_key=st.secrets["OPENAI_API_KEY"]
@@ -23,6 +27,10 @@ def connect_to_sheet():
 # Streamlit page setup
 st.set_page_config(page_title="🏠 Mortgage Chatbot (Streaming + Email Capture)", layout="wide")
 st.title("🏠 Mortgage Chatbot (Streaming + Email Capture)")
+
+# (commented out animated heading and rain)
+# animated_headline("🚀 Mortgage Insights Bot 🚀", animation="bounce")
+# rain(emoji="💬", font_size=24, falling_speed=5, animation_length="infinite")
 
 # Session state initialization
 if "messages" not in st.session_state:
