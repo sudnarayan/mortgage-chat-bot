@@ -75,7 +75,9 @@ try:
                 yield chunk.choices[0].delta.content
         return full_response
 
-    if prompt := st.chat_input("Ask me anything about mortgages!"):
+    prompt = st.chat_input("Ask me anything about mortgages!")
+
+    if prompt:
         st.session_state.messages.append({"role": "user", "content": prompt})
         full_response = ""
         for chunk in stream_gpt_response(prompt):
