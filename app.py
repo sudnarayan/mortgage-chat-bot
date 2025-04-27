@@ -85,7 +85,11 @@ try:
             server = smtplib.SMTP("smtp.gmail.com", 587)
             server.starttls()
             server.ehlo()
-            server.auth("XOAUTH2", lambda x: f"user={sender_email}\x01auth=Bearer {access_token}\x01\x01".encode())
+
+            # --- This is how you do OAuth2 authentication manually ---
+            auth_string = f"user={sender_email}\x01auth=Bearer {access_token}\x01\x01"
+            server.docmd("AUTH", "XOAUTH2 " + base64.b64encode(auth_string.encode()).decode())
+
             server.sendmail(sender_email, to_email, message.as_string())
             server.quit()
             return True
