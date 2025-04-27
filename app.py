@@ -5,10 +5,9 @@ import json
 from io import StringIO
 from oauth2client.service_account import ServiceAccountCredentials
 from datetime import datetime
-
-# (commented out extras to avoid missing module error)
-# from streamlit_extras.animated_headline import animated_headline
-# from streamlit_extras.let_it_rain import rain
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 # Setup OpenAI client
 client = openai.OpenAI(
@@ -24,13 +23,43 @@ def connect_to_sheet():
     sheet = client.open("Mortgage Leads").sheet1
     return sheet
 
+# Send Auto Thank You Email
+def send_thank_you_email(to_email):
+    sender_email = st.secrets["SENDER_EMAIL"]
+    sender_password = st.secrets["SENDER_EMAIL_PASSWORD"]
+
+    subject = "Thanks for Connecting with Mortgage Bot 🏡"
+    body = f"""
+    Hi there 👋,
+
+    Thanks for connecting with us at Mortgage Chatbot (Canada)! 🇨🇦
+
+    We're excited to help you with your mortgage questions and financing journey.
+    Feel free to ask anything — we're here 24/7!
+
+    Stay awesome,
+    Mortgage Bot Team 🚀
+    """
+
+    message = MIMEMultipart()
+    message["From"] = sender_email
+    message["To"] = to_email
+    message["Subject"] = subject
+
+    message.attach(MIMEText(body, "plain"))
+
+    try:
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login(sender_email, sender_password)
+            server.sendmail(sender_email, to_email, message.as_string())
+        return True
+    except Exception as e:
+        st.error(f"Failed to send Thank You email: {e}")
+        return False
+
 # Streamlit page setup
 st.set_page_config(page_title="🏠 Mortgage Chatbot (Streaming + Email Capture)", layout="wide")
 st.title("🏠 Mortgage Chatbot (Streaming + Email Capture)")
-
-# (commented out animated heading and rain)
-# animated_headline("🚀 Mortgage Insights Bot 🚀", animation="bounce")
-# rain(emoji="💬", font_size=24, falling_speed=5, animation_length="infinite")
 
 # Session state initialization
 if "messages" not in st.session_state:
@@ -92,6 +121,7 @@ for message in st.session_state.messages:
                 try:
                     sheet = connect_to_sheet()
                     sheet.append_row([email, str(datetime.now())])
+                    send_thank_you_email(email)  # 🔥 Thank You email after saving
                 except Exception as e:
                     st.error(f"Failed to save email: {e}")
 
