@@ -113,8 +113,20 @@ def send_thank_you_email(to_email):
         return False
 
 # Streamlit app config
-st.set_page_config(page_title="🏠 Mortgage Chatbot (Streaming + Email Capture)", layout="wide")
-st.title("🏠 Mortgage Chatbot (Streaming + Email Capture)")
+# SEO: Set a more descriptive page title
+st.set_page_config(
+    page_title="Canadian Mortgage Chatbot | Get Expert Answers Fast",
+    page_icon="🏠",  # You can use an emoji or a URL to a favicon
+    layout="wide",
+    # SEO: Add meta description for search engine snippets
+    description="Get instant answers to your Canadian mortgage questions with our AI-powered chatbot.  Ask about rates, qualifications, refinancing, and more.  Serving all of Canada.",
+    # Removed initial_sidebar_state -  Let Streamlit handle it.
+)
+# SEO: Main heading with relevant keywords
+st.title("🏠 Mortgage Chatbot (Canada) - Your AI-Powered Mortgage Expert")
+
+# SEO: Subheading with keyword variation
+st.markdown("## Get Instant Answers to Your Canadian Mortgage Questions")
 
 # Session State Initialization
 if "messages" not in st.session_state:
@@ -201,6 +213,21 @@ for message in st.session_state.messages:
 # Display email only after it has been captured
 if st.session_state.email_captured:
     st.write(f"Your email: {st.session_state.user_email}")
+
+# SEO: Add a section with more details about the chatbot
+st.markdown("""
+## About Our Mortgage Chatbot
+
+Our AI-powered chatbot is designed to provide you with fast, accurate answers to your Canadian mortgage questions.  Whether you're a first-time homebuyer or looking to refinance, we can help.  We cover a wide range of topics, including:
+
+* Mortgage rates and calculations
+* Pre-approval and qualification requirements
+* Refinancing options
+* Mortgage terms and conditions
+* Canadian mortgage regulations
+
+We're here to help you navigate the complexities of the Canadian mortgage market.  Ask us anything!
+""")
 
 # Footer
 st.markdown("---")
