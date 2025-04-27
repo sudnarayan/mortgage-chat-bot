@@ -121,8 +121,9 @@ try:
         st.session_state.messages.append({"role": "assistant", "content": full_response})
 
     user_messages = [m for m in st.session_state.messages if m["role"] == "user"]
+    #st.write(len(user_messages)) #for debugging
 
-    if not st.session_state.email_captured:
+    if len(user_messages) >= 3 and not st.session_state.email_captured:
         with st.expander("🎯 Get personalized mortgage tips - Enter Name & Email"):
             name = st.text_input("Enter your full name:", key="name_input")
             email = st.text_input("Enter your email address:", key="email_input")
