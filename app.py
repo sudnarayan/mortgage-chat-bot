@@ -18,7 +18,7 @@ def connect_to_sheet():
     return sheet
 
 # Streamlit page setup
-st.set_page_config(page_title="🏠 Mortgage Chatbot (GPT + Email Capture)", layout="wide")
+st.set_page_config(page_title="🏠 Mortgage Chatbot (Streaming + Email Capture)", layout="wide")
 st.title("🏠 Mortgage Chatbot (Streaming + Email Capture)")
 
 # Session state initialization
@@ -48,42 +48,44 @@ def stream_gpt_response(prompt):
             yield chunk.choices[0].delta.content
     return full_response
 
-# Display past messages
+# Chat input handling
+if prompt := st.chat_input("Ask me anything about mortgages!"):
+    st.session_state.messages.append({"role": "user", "content": prompt})
+
+    # Stream the assistant response
+    full_response = ""
+    for chunk in stream_gpt_response(prompt):
+        full_response += chunk
+    st.session_state.messages.append({"role": "assistant", "content": full_response})
+
+# Count user messages separately
+user_messages = [m for m in st.session_state.messages if m["role"] == "user"]
+
+# 👇 Inject Email Capture inside the chat flow
+if len(user_messages) == 3 and not st.session_state.email_captured and not st.session_state.email_prompted:
+    st.session_state.messages.append({"role": "assistant", "content": "**🎯 Would you like personalized mortgage tips? Enter your email below!**"})
+    st.session_state.email_prompted = True
+
+# Display chat messages
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# Chat input handling
-if prompt := st.chat_input("Ask me anything about mortgages!"):
-    with st.chat_message("user"):
-        st.markdown(prompt)
-    st.session_state.messages.append({"role": "user", "content": prompt})
+        # 👇 If it's the special email prompt, show input inside chat
+        if "**🎯 Would you like personalized mortgage tips?" in message["content"] and not st.session_state.email_captured:
+            email = st.text_input("Enter your email address:", key="email_input")
+            if email and "@" in email:
+                st.success(f"Thanks! We've saved your email: {email}")
+                st.session_state.email_captured = True
 
-    with st.chat_message("assistant"):
-        response_stream = stream_gpt_response(prompt)
-        full_response = st.write_stream(response_stream)
-    st.session_state.messages.append({"role": "assistant", "content": full_response})
+                try:
+                    sheet = connect_to_sheet()
+                    sheet.append_row([email, str(datetime.now())])
+                except Exception as e:
+                    st.error(f"Failed to save email: {e}")
 
-# NOW do the Email Capture Check (AFTER new message inserted)
-user_messages = [m for m in st.session_state.messages if m["role"] == "user"]
-
-if len(user_messages) >= 3 and not st.session_state.email_captured and not st.session_state.email_prompted:
-    with st.expander("🎯 Get personalized mortgage tips! (Optional)"):
-        email = st.text_input("Enter your email:", key="email_input")
-        if email and "@" in email:
-            st.success(f"Thanks! We've saved your email: {email}")
-            st.session_state.email_captured = True
-
-            try:
-                sheet = connect_to_sheet()
-                sheet.append_row([email, str(datetime.now())])
-            except Exception as e:
-                st.error(f"Failed to save email: {e}")
-
-        elif email:
-            st.warning("Please enter a valid email address.")
-
-    st.session_state.email_prompted = True
+            elif email:
+                st.warning("Please enter a valid email address.")
 
 # Footer
 st.markdown("---")
