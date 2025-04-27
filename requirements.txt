@@ -3,4 +3,8 @@ openai
 gspread
 oauth2client
 google-api-python-client
+streamlit
+openai
+google-api-python-client
+google-auth-oauthlib
 
