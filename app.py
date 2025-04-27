@@ -9,19 +9,19 @@ client = openai.OpenAI(
     api_key=st.secrets.get("OPENAI_API_KEY")
 )
 
-# Setup Google Sheets client
+# Setup Google Sheets connection
 def connect_to_sheet():
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
     creds = ServiceAccountCredentials.from_json_keyfile_name(".streamlit/streamlit-csvwizard-bot.json", scope)
     client = gspread.authorize(creds)
-    sheet = client.open("Mortgage Leads").sheet1  # your sheet name
+    sheet = client.open("Mortgage Leads").sheet1  # Your Google Sheet name
     return sheet
 
 # Streamlit page setup
 st.set_page_config(page_title="🏠 Mortgage Chatbot (GPT + Email Capture)", layout="wide")
 st.title("🏠 Mortgage Chatbot (Streaming + Email Capture)")
 
-# Session states
+# Session state initialization
 if "messages" not in st.session_state:
     st.session_state.messages = []
 if "email_captured" not in st.session_state:
@@ -29,13 +29,13 @@ if "email_captured" not in st.session_state:
 if "email_prompted" not in st.session_state:
     st.session_state.email_prompted = False
 
-# GPT Streaming function
+# GPT streaming response function
 def stream_gpt_response(prompt):
     full_response = ""
     stream = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[
-            {"role": "system", "content": "You are a friendly mortgage expert. Keep it simple and Canadian-focused."},
+            {"role": "system", "content": "You are a friendly mortgage expert focused on Canadian mortgage advice."},
             {"role": "user", "content": prompt}
         ],
         temperature=0.5,
@@ -48,12 +48,12 @@ def stream_gpt_response(prompt):
             yield chunk.choices[0].delta.content
     return full_response
 
-# Display past messages
+# Display chat history
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# Chat input
+# Chat input handling
 if prompt := st.chat_input("Ask me anything about mortgages!"):
     with st.chat_message("user"):
         st.markdown(prompt)
@@ -64,8 +64,8 @@ if prompt := st.chat_input("Ask me anything about mortgages!"):
         full_response = st.write_stream(response_stream)
     st.session_state.messages.append({"role": "assistant", "content": full_response})
 
-# 👇 Email Capture Logic
-if len(st.session_state.messages) >= 6 and not st.session_state.email_captured and not st.session_state.email_prompted:
+# Email Capture Logic (after 4 messages = 2 user + 2 bot)
+if len(st.session_state.messages) >= 4 and not st.session_state.email_captured and not st.session_state.email_prompted:
     with st.expander("🎯 Get personalized mortgage tips! (Optional)"):
         email = st.text_input("Enter your email:", key="email_input")
         if email and "@" in email:
@@ -80,7 +80,7 @@ if len(st.session_state.messages) >= 6 and not st.session_state.email_captured a
 
         elif email:
             st.warning("Please enter a valid email address.")
-    
+
     st.session_state.email_prompted = True  # Only ask once
 
 # Footer
