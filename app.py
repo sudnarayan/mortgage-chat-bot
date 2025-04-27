@@ -1,6 +1,7 @@
 import streamlit as st
-from streamlit_extras.let_it_rain import rain
 import pandas as pd
+import requests
+from streamlit_extras.let_it_rain import rain
 
 st.set_page_config(page_title="Mortgage Insights Bot – Early Access", layout="centered")
 
@@ -14,38 +15,11 @@ st.markdown("""
 
 st.markdown("""
 <style>
-    .lead-text {
-        font-size: 1.2rem;
-        margin-bottom: 2rem;
-        text-align: center;
-    }
-    .footer-text {
-        text-align: center; 
-        margin-top: 2rem; 
-        font-size: 0.9rem; 
-        color: #777;
-    }
-    .pricing-table {
-        display: flex;
-        justify-content: center;
-        gap: 2rem;
-        margin-top: 2rem;
-        flex-wrap: wrap;
-    }
-    .pricing-card {
-        background: #2c2f36;
-        padding: 1.5rem;
-        border-radius: 1rem;
-        text-align: center;
-        width: 250px;
-        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-        color: white;
-    }
-    .price {
-        font-size: 2rem;
-        margin: 1rem 0;
-        color: #4fc3f7;
-    }
+    .lead-text { font-size: 1.2rem; margin-bottom: 2rem; text-align: center; }
+    .footer-text { text-align: center; margin-top: 2rem; font-size: 0.9rem; color: #777; }
+    .pricing-table { display: flex; justify-content: center; gap: 2rem; margin-top: 2rem; flex-wrap: wrap; }
+    .pricing-card { background: #2c2f36; padding: 1.5rem; border-radius: 1rem; text-align: center; width: 250px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); color: white; }
+    .price { font-size: 2rem; margin: 1rem 0; color: #4fc3f7; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -60,6 +34,7 @@ Limited access — reserve your spot now!
 """, unsafe_allow_html=True)
 
 formsubmit_email = st.secrets["FORM_SUBMIT_EMAIL"]
+feedback_sheet_url = st.secrets["FEEDBACK_SHEET_WEBHOOK"]
 
 st.markdown(f"""
 <form action="https://formsubmit.co/{formsubmit_email}" method="POST">
@@ -107,7 +82,16 @@ if uploaded_file is not None:
         submitted = st.form_submit_button("Submit Feedback")
 
         if submitted:
-            st.success("🎉 Thanks for your feedback! You're helping us build better!")
+            feedback_data = {
+                "Satisfaction": satisfaction,
+                "Confusion": confusion,
+                "Recommend": recommend
+            }
+            try:
+                requests.post(feedback_sheet_url, json=feedback_data)
+                st.success("🎉 Thanks for your feedback! We recorded it!")
+            except:
+                st.error("⚠️ Failed to send feedback. Please try again.")
 
 rain(emoji="🎯", font_size=0)
 
