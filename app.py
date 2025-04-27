@@ -1,34 +1,21 @@
 import streamlit as st
 import openai
 import gspread
+import json
+from io import StringIO
 from oauth2client.service_account import ServiceAccountCredentials
 from datetime import datetime
-import json
-import gspread
-from oauth2client.service_account import ServiceAccountCredentials
-from io import StringIO
 
+# Setup OpenAI client
+client = openai.OpenAI(
+    api_key=st.secrets["OPENAI_API_KEY"]
+)
 
+# Setup Google Sheets connection using Streamlit Secrets
 def connect_to_sheet():
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
     json_creds = json.loads(st.secrets["GOOGLE_SERVICE_ACCOUNT_JSON"])
     creds = ServiceAccountCredentials.from_json_keyfile_dict(json_creds, scope)
-    client = gspread.authorize(creds)
-    sheet = client.open("Mortgage Leads").sheet1
-    return sheet
-
-
-
-
-# Setup OpenAI client
-client = openai.OpenAI(
-    api_key=st.secrets.get("OPENAI_API_KEY")
-)
-
-# Setup Google Sheets connection
-def connect_to_sheet():
-    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    creds = ServiceAccountCredentials.from_json_keyfile_name(".streamlit/streamlit-csvwizard-bot.json", scope)
     client = gspread.authorize(creds)
     sheet = client.open("Mortgage Leads").sheet1
     return sheet
