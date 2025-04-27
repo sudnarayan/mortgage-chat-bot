@@ -2,7 +2,6 @@ import streamlit as st
 import openai
 import gspread
 import json
-from io import StringIO
 from oauth2client.service_account import ServiceAccountCredentials
 from datetime import datetime
 import smtplib
@@ -14,7 +13,7 @@ client = openai.OpenAI(
     api_key=st.secrets["OPENAI_API_KEY"]
 )
 
-# Setup Google Sheets connection using Streamlit Secrets
+# Setup Google Sheets connection using Service Account
 def connect_to_sheet():
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
     json_creds = json.loads(st.secrets["GOOGLE_SERVICE_ACCOUNT_JSON"])
@@ -23,7 +22,7 @@ def connect_to_sheet():
     sheet = client.open("Mortgage Leads").sheet1
     return sheet
 
-# Send Auto Thank You Email
+# Setup Email sending (THOROUGHLY Correct Now)
 def send_thank_you_email(to_email):
     sender_email = st.secrets["SENDER_EMAIL"]
     sender_password = st.secrets["SENDER_EMAIL_PASSWORD"]
@@ -57,7 +56,7 @@ def send_thank_you_email(to_email):
         st.error(f"Failed to send Thank You email: {e}")
         return False
 
-# Streamlit page setup
+# Setup Streamlit App
 st.set_page_config(page_title="🏠 Mortgage Chatbot (Streaming + Email Capture)", layout="wide")
 st.title("🏠 Mortgage Chatbot (Streaming + Email Capture)")
 
@@ -69,7 +68,7 @@ if "email_captured" not in st.session_state:
 if "email_prompted" not in st.session_state:
     st.session_state.email_prompted = False
 
-# GPT streaming response function
+# GPT streaming response
 def stream_gpt_response(prompt):
     full_response = ""
     stream = client.chat.completions.create(
@@ -101,17 +100,17 @@ if prompt := st.chat_input("Ask me anything about mortgages!"):
 # Count user messages separately
 user_messages = [m for m in st.session_state.messages if m["role"] == "user"]
 
-# 👇 Inject Email Capture inside the chat flow
+# Show Email Capture Form after 3 user messages
 if len(user_messages) == 3 and not st.session_state.email_captured and not st.session_state.email_prompted:
     st.session_state.messages.append({"role": "assistant", "content": "**🎯 Would you like personalized mortgage tips? Enter your email below!**"})
     st.session_state.email_prompted = True
 
-# Display chat messages
+# Display Chat Messages
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-        # 👇 If it's the special email prompt, show input inside chat
+        # If it's the special email prompt, show text input
         if "**🎯 Would you like personalized mortgage tips?" in message["content"] and not st.session_state.email_captured:
             email = st.text_input("Enter your email address:", key="email_input")
             if email and "@" in email:
@@ -121,7 +120,7 @@ for message in st.session_state.messages:
                 try:
                     sheet = connect_to_sheet()
                     sheet.append_row([email, str(datetime.now())])
-                    send_thank_you_email(email)  # 🔥 Thank You email after saving
+                    send_thank_you_email(email)  # ✅ Send Thank You after saving
                 except Exception as e:
                     st.error(f"Failed to save email: {e}")
 
