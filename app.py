@@ -126,8 +126,7 @@ try:
 
     user_messages = [m for m in st.session_state.messages if m["role"] == "user"]
     #st.write(len(user_messages)) #for debugging
-
-    if len(user_messages) >= 3 and not st.session_state.email_captured:
+    if len(user_messages) >= 3 and not st.session_state.email_captured: #AND added this condition
         with st.expander("🎯 Get personalized mortgage tips - Enter Name & Email"):
             name = st.text_input("Enter your full name:", key="name_input")
             email = st.text_input("Enter your email address:", key="email_input")
@@ -141,6 +140,9 @@ try:
                     st.session_state.user_name = name
                     st.session_state.messages.append({"role": "assistant", "content": f"Thank you {name} for providing your email!"})
                     send_thank_you_email_oauth(name, email)
+                    st.session_state.name_input = ""  # Clear input
+                    st.session_state.email_input = "" # Clear input
+
                 elif email and "@" not in email:
                     st.warning("Please enter a valid email address.")
                 elif name and not email:
@@ -173,3 +175,4 @@ try:
 except ModuleNotFoundError as e:
     print("Required module not found. Please make sure Streamlit is installed and you are running this locally.")
     print(str(e))
+
