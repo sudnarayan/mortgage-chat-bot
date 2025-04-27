@@ -120,7 +120,6 @@ st.set_page_config(
     layout="wide",
     # SEO: Add meta description for search engine snippets
     description="Get instant answers to your Canadian mortgage questions with our AI-powered chatbot.  Ask about rates, qualifications, refinancing, and more.  Serving all of Canada.",
-    # Removed initial_sidebar_state -  Let Streamlit handle it.
 )
 # SEO: Main heading with relevant keywords
 st.title("🏠 Mortgage Chatbot (Canada) - Your AI-Powered Mortgage Expert")
