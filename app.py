@@ -35,7 +35,6 @@ try:
         height=0,
     )
 
-    # SEO: Main heading with relevant keywords
     st.title("🏠 Mortgage Chatbot (Canada) - Your AI-Powered Mortgage Expert")
 
     st.markdown("## Get Instant Answers to Your Canadian Mortgage Questions")
@@ -44,18 +43,14 @@ try:
         st.session_state.messages = []
     if "email_captured" not in st.session_state:
         st.session_state.email_captured = False
-    if "email_prompted" not in st.session_state:
-        st.session_state.email_prompted = False
     if "user_email" not in st.session_state:
         st.session_state.user_email = ""
-    if "credentials" not in st.session_state:
-        st.session_state.credentials = None
+    if "user_name" not in st.session_state:
+        st.session_state.user_name = ""
 
     client = openai.OpenAI(
         api_key=st.secrets.get("OPENAI_API_KEY", "fake-key-for-demo")
     )
-
-    SCOPES = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive.file"]
 
     def stream_gpt_response(prompt):
         full_response = ""
@@ -86,23 +81,27 @@ try:
 
     user_messages = [m for m in st.session_state.messages if m["role"] == "user"]
 
-    if len(user_messages) == 3 and not st.session_state.email_captured and not st.session_state.email_prompted:
-        with st.expander("🎯 Get personalized mortgage tips - Enter Email"):
-            email = st.text_input("Enter your email address:", key="email_input_after_3")
-            if email and "@" in email:
-                st.success(f"Thanks! We've saved your email: {email}")
+    if not st.session_state.email_captured:
+        with st.expander("🎯 Get personalized mortgage tips - Enter Name & Email"):
+            name = st.text_input("Enter your full name:", key="name_input")
+            email = st.text_input("Enter your email address:", key="email_input")
+            if name and email and "@" in email:
+                st.success(f"Thanks {name}! We've saved your info.")
                 st.session_state.email_captured = True
                 st.session_state.user_email = email
-                st.session_state.messages.append({"role": "assistant", "content": "Thank you for providing your email!"})
-            elif email:
+                st.session_state.user_name = name
+                st.session_state.messages.append({"role": "assistant", "content": f"Thank you {name} for providing your email!"})
+            elif email and "@" not in email:
                 st.warning("Please enter a valid email address.")
-        st.session_state.email_prompted = True
+            elif name and not email:
+                st.warning("Please enter your email address.")
 
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
     if st.session_state.email_captured:
+        st.write(f"Your name: {st.session_state.user_name}")
         st.write(f"Your email: {st.session_state.user_email}")
 
     st.markdown("""
