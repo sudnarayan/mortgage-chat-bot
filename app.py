@@ -48,29 +48,7 @@ def stream_gpt_response(prompt):
             yield chunk.choices[0].delta.content
     return full_response
 
-# Count user messages separately
-user_messages = [m for m in st.session_state.messages if m["role"] == "user"]
-
-# 🛠 Email Capture Logic (show EARLY after 2 user messages to fix timing)
-if len(user_messages) >= 2 and not st.session_state.email_captured and not st.session_state.email_prompted:
-    with st.expander("🎯 Get personalized mortgage tips! (Optional)"):
-        email = st.text_input("Enter your email:", key="email_input")
-        if email and "@" in email:
-            st.success(f"Thanks! We've saved your email: {email}")
-            st.session_state.email_captured = True
-
-            try:
-                sheet = connect_to_sheet()
-                sheet.append_row([email, str(datetime.now())])
-            except Exception as e:
-                st.error(f"Failed to save email: {e}")
-
-        elif email:
-            st.warning("Please enter a valid email address.")
-    
-    st.session_state.email_prompted = True
-
-# Display chat history
+# Display past messages
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
@@ -85,6 +63,27 @@ if prompt := st.chat_input("Ask me anything about mortgages!"):
         response_stream = stream_gpt_response(prompt)
         full_response = st.write_stream(response_stream)
     st.session_state.messages.append({"role": "assistant", "content": full_response})
+
+# NOW do the Email Capture Check (AFTER new message inserted)
+user_messages = [m for m in st.session_state.messages if m["role"] == "user"]
+
+if len(user_messages) >= 3 and not st.session_state.email_captured and not st.session_state.email_prompted:
+    with st.expander("🎯 Get personalized mortgage tips! (Optional)"):
+        email = st.text_input("Enter your email:", key="email_input")
+        if email and "@" in email:
+            st.success(f"Thanks! We've saved your email: {email}")
+            st.session_state.email_captured = True
+
+            try:
+                sheet = connect_to_sheet()
+                sheet.append_row([email, str(datetime.now())])
+            except Exception as e:
+                st.error(f"Failed to save email: {e}")
+
+        elif email:
+            st.warning("Please enter a valid email address.")
+
+    st.session_state.email_prompted = True
 
 # Footer
 st.markdown("---")
