@@ -118,8 +118,6 @@ st.set_page_config(
     page_title="Canadian Mortgage Chatbot | Get Expert Answers Fast",
     page_icon="🏠",  # You can use an emoji or a URL to a favicon
     layout="wide",
-    # SEO: Add meta description for search engine snippets
-    description="Get instant answers to your Canadian mortgage questions with our AI-powered chatbot.  Ask about rates, qualifications, refinancing, and more.  Serving all of Canada.",
 )
 # SEO: Main heading with relevant keywords
 st.title("🏠 Mortgage Chatbot (Canada) - Your AI-Powered Mortgage Expert")
