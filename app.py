@@ -47,6 +47,10 @@ try:
         st.session_state.user_email = ""
     if "user_name" not in st.session_state:
         st.session_state.user_name = ""
+    if "name_input" not in st.session_state:
+        st.session_state.name_input = ""
+    if "email_input" not in st.session_state:
+        st.session_state.email_input = ""
 
     client = openai.OpenAI(
         api_key=st.secrets.get("OPENAI_API_KEY", "fake-key-for-demo")
@@ -86,7 +90,6 @@ try:
             server.starttls()
             server.ehlo()
 
-            # --- This is how you do OAuth2 authentication manually ---
             auth_string = f"user={sender_email}\x01auth=Bearer {access_token}\x01\x01"
             server.docmd("AUTH", "XOAUTH2 " + base64.b64encode(auth_string.encode()).decode())
 
@@ -125,11 +128,11 @@ try:
         st.session_state.messages.append({"role": "assistant", "content": full_response})
 
     user_messages = [m for m in st.session_state.messages if m["role"] == "user"]
-    #st.write(len(user_messages)) #for debugging
-    if len(user_messages) >= 3 and not st.session_state.email_captured: #AND added this condition
+
+    if len(user_messages) >= 3 and not st.session_state.email_captured:
         with st.expander("🎯 Get personalized mortgage tips - Enter Name & Email"):
-            name = st.text_input("Enter your full name:", key="name_input")
-            email = st.text_input("Enter your email address:", key="email_input")
+            name = st.text_input("Enter your full name:", key="name_input", value=st.session_state.name_input)
+            email = st.text_input("Enter your email address:", key="email_input", value=st.session_state.email_input)
             submit_button = st.button("Submit", key="submit_email_button")
 
             if submit_button:
@@ -140,9 +143,8 @@ try:
                     st.session_state.user_name = name
                     st.session_state.messages.append({"role": "assistant", "content": f"Thank you {name} for providing your email!"})
                     send_thank_you_email_oauth(name, email)
-                    st.session_state.name_input = ""  # Clear input
-                    st.session_state.email_input = "" # Clear input
-
+                    st.session_state.name_input = ""
+                    st.session_state.email_input = ""
                 elif email and "@" not in email:
                     st.warning("Please enter a valid email address.")
                 elif name and not email:
@@ -175,4 +177,3 @@ try:
 except ModuleNotFoundError as e:
     print("Required module not found. Please make sure Streamlit is installed and you are running this locally.")
     print(str(e))
-
