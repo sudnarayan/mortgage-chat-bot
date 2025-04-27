@@ -1,26 +1,73 @@
 import streamlit as st
 import openai
-import gspread
-import json
-from oauth2client.service_account import ServiceAccountCredentials
+import google.oauth2.credentials
+from google_auth_oauthlib.flow import InstalledAppFlow
+from googleapiclient.discovery import build
+import os
 from datetime import datetime
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+import json  # Import the json module
 
 # Setup OpenAI client
 client = openai.OpenAI(
     api_key=st.secrets["OPENAI_API_KEY"]
 )
 
-# Connect to Google Sheet
-def connect_to_sheet():
-    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    json_creds = json.loads(st.secrets["GOOGLE_SERVICE_ACCOUNT_JSON"])
-    creds = ServiceAccountCredentials.from_json_keyfile_dict(json_creds, scope)
-    client = gspread.authorize(creds)
-    sheet = client.open("Mortgage Leads").sheet1
-    return sheet
+# --- OAuth 2.0 for Google Sheets ---
+SCOPES = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive.file"]  # Added drive.file scope
+CLIENT_SECRET_FILE = "client_secret.json"  # Name of your client secret file
+TOKEN_PATH = "token.json"
+
+def get_credentials_oauth():
+    creds = None
+    if os.path.exists(TOKEN_PATH):
+        creds = google.oauth2.credentials.Credentials.from_authorized_user_file(TOKEN_PATH, SCOPES)
+    if not creds or not creds.valid:
+        if creds and creds.expired and creds.refresh_token:
+            try:
+                creds.refresh(google.auth.transport.requests.Request())
+            except Exception as e:
+                st.error(f"Error refreshing credentials: {e}")
+                os.remove(TOKEN_PATH)  # Remove the invalid token file
+                creds = None  # Force re-authorization
+        if not creds:
+            #  Use json.loads to parse the service account info, and write to client_secret.json
+            client_secret_info = json.loads(st.secrets["GOOGLE_SERVICE_ACCOUNT_JSON"])
+            with open(CLIENT_SECRET_FILE, 'w') as f:
+                json.dump(client_secret_info, f, indent=4) #indent for readbility
+            flow = InstalledAppFlow.from_client_secrets_file(
+                CLIENT_SECRET_FILE, SCOPES)
+            flow.redirect_uri = "http://localhost:8501"  # Or your Streamlit Cloud URL
+            auth_url, _ = flow.authorization_url()
+            st.session_state.auth_url = auth_url #save auth url to session
+            st.write(f'Please go to this URL to authorize: {auth_url}')
+            code = st.text_input("Enter the authorization code:")
+            if code:
+                try:
+                  token_response = flow.fetch_token(code=code)
+                  creds = flow.credentials
+                  with open(TOKEN_PATH, 'w') as token:
+                    token.write(creds.to_json())
+                  st.session_state.credentials = creds
+                except Exception as e:
+                    st.error(f"Error fetching token: {e}")
+                    return None
+            else:
+                return None #Stop if code is not provided
+    return creds
+
+def connect_to_sheet(creds):
+    try:
+        service = build('sheets', 'v4', credentials=creds)
+        sheet = service.spreadsheets()
+        return sheet
+    except Exception as e:
+        st.error(f"Error connecting to Google Sheets: {e}")
+        return None
+
+# --- End OAuth 2.0 ---
 
 # Send Thank You Email Function
 def send_thank_you_email(to_email):
@@ -66,6 +113,10 @@ if "email_captured" not in st.session_state:
     st.session_state.email_captured = False
 if "email_prompted" not in st.session_state:
     st.session_state.email_prompted = False
+if "user_email" not in st.session_state:  # Store user email
+    st.session_state.user_email = ""
+if "credentials" not in st.session_state:
+    st.session_state.credentials = None
 
 # Streaming GPT response function
 def stream_gpt_response(prompt):
@@ -114,16 +165,32 @@ for message in st.session_state.messages:
             if email and "@" in email:
                 st.success(f"Thanks! We've saved your email: {email}")
                 st.session_state.email_captured = True
+                st.session_state.user_email = email  # Store the email
 
-                try:
-                    sheet = connect_to_sheet()
-                    sheet.append_row([email, str(datetime.now())])
-                    send_thank_you_email(email)
-                except Exception as e:
-                    st.error(f"Failed to save email or send Thank You email: {e}")
+                #  Use OAuth to connect to Google Sheets and append the row.
+                creds = get_credentials_oauth()
+                if creds:
+                    sheet = connect_to_sheet(creds)
+                    if sheet:
+                        try:
+                            # Use the sheet ID from the provided URL
+                            sheet_id = "17CITdwS0z4Lhzl-ZPVCe0Dwukl1fQan2z1gnhabVSpI"
+                            sheet.values().append(spreadsheetId=sheet_id, range='Sheet1', valueInputOption='RAW', body={'values': [[email, str(datetime.now())]]}).execute()
+                            send_thank_you_email(email)
+                        except Exception as e:
+                            st.error(f"Failed to save email: {e}")
+                    else:
+                        st.error("Failed to connect to Google Sheets using OAuth.")
+                else:
+                    st.error("Failed to obtain Google credentials using OAuth.")
+                st.session_state.messages.append({"role": "assistant", "content": "Thank you for providing your email!"})
 
             elif email:
                 st.warning("Please enter a valid email address.")
+
+# Display email only after it has been captured
+if st.session_state.email_captured:
+    st.write(f"Your email: {st.session_state.user_email}")
 
 # Footer
 st.markdown("---")
