@@ -1,5 +1,3 @@
-# Note: This environment does not support Streamlit. This code assumes running locally with Streamlit installed.
-
 try:
     import streamlit as st
     import openai
@@ -15,6 +13,9 @@ try:
     import google.auth.transport.requests
     from google.oauth2 import service_account
     import streamlit.components.v1 as components
+    import base64
+    import google.auth
+    from google.auth.transport.requests import Request
 
     # --- SEO + Landing Page Head Injection ---
     st.set_page_config(
@@ -36,7 +37,6 @@ try:
     )
 
     st.title("🏠 Mortgage Chatbot (Canada) - Your AI-Powered Mortgage Expert")
-
     st.markdown("## Get Instant Answers to Your Canadian Mortgage Questions")
 
     if "messages" not in st.session_state:
@@ -51,6 +51,47 @@ try:
     client = openai.OpenAI(
         api_key=st.secrets.get("OPENAI_API_KEY", "fake-key-for-demo")
     )
+
+    def send_thank_you_email_oauth(name, to_email):
+        sender_email = st.secrets["GMAIL_SENDER_EMAIL"]
+        credentials_info = json.loads(st.secrets["GMAIL_OAUTH_CREDENTIALS_JSON"])
+        credentials = google.oauth2.credentials.Credentials.from_authorized_user_info(credentials_info)
+
+        if not credentials.valid and credentials.expired and credentials.refresh_token:
+            credentials.refresh(Request())
+
+        access_token = credentials.token
+
+        subject = "Thanks for Connecting with Mortgage Bot 🏡"
+        body = f"""
+        Hi {name},
+
+        Thanks for connecting with us at Mortgage Chatbot (Canada)! 🇨🇦
+
+        We're excited to help you with your mortgage questions and financing journey.
+        Feel free to ask anything — we're here 24/7!
+
+        Stay awesome,
+        Mortgage Bot Team 🚀
+        """
+
+        message = MIMEMultipart()
+        message["From"] = sender_email
+        message["To"] = to_email
+        message["Subject"] = subject
+        message.attach(MIMEText(body, "plain"))
+
+        try:
+            server = smtplib.SMTP("smtp.gmail.com", 587)
+            server.starttls()
+            server.ehlo()
+            server.auth("XOAUTH2", lambda x: f"user={sender_email}\x01auth=Bearer {access_token}\x01\x01".encode())
+            server.sendmail(sender_email, to_email, message.as_string())
+            server.quit()
+            return True
+        except Exception as e:
+            st.error(f"Failed to send email via OAuth: {e}")
+            return False
 
     def stream_gpt_response(prompt):
         full_response = ""
@@ -91,6 +132,7 @@ try:
                 st.session_state.user_email = email
                 st.session_state.user_name = name
                 st.session_state.messages.append({"role": "assistant", "content": f"Thank you {name} for providing your email!"})
+                send_thank_you_email_oauth(name, email)
             elif email and "@" not in email:
                 st.warning("Please enter a valid email address.")
             elif name and not email:
