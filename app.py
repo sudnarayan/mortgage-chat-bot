@@ -14,7 +14,7 @@ def connect_to_sheet():
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
     creds = ServiceAccountCredentials.from_json_keyfile_name(".streamlit/streamlit-csvwizard-bot.json", scope)
     client = gspread.authorize(creds)
-    sheet = client.open("Mortgage Leads").sheet1  # Your Google Sheet name
+    sheet = client.open("Mortgage Leads").sheet1
     return sheet
 
 # Streamlit page setup
@@ -29,7 +29,7 @@ if "email_captured" not in st.session_state:
 if "email_prompted" not in st.session_state:
     st.session_state.email_prompted = False
 
-# GPT streaming response function
+# GPT streaming function
 def stream_gpt_response(prompt):
     full_response = ""
     stream = client.chat.completions.create(
@@ -64,8 +64,10 @@ if prompt := st.chat_input("Ask me anything about mortgages!"):
         full_response = st.write_stream(response_stream)
     st.session_state.messages.append({"role": "assistant", "content": full_response})
 
-# Email Capture Logic (after 4 messages = 2 user + 2 bot)
-if len(st.session_state.messages) >= 4 and not st.session_state.email_captured and not st.session_state.email_prompted:
+# 👇 Email Capture Logic (based ONLY on user messages)
+user_messages = [m for m in st.session_state.messages if m["role"] == "user"]
+
+if len(user_messages) >= 3 and not st.session_state.email_captured and not st.session_state.email_prompted:
     with st.expander("🎯 Get personalized mortgage tips! (Optional)"):
         email = st.text_input("Enter your email:", key="email_input")
         if email and "@" in email:
@@ -81,7 +83,7 @@ if len(st.session_state.messages) >= 4 and not st.session_state.email_captured a
         elif email:
             st.warning("Please enter a valid email address.")
 
-    st.session_state.email_prompted = True  # Only ask once
+    st.session_state.email_prompted = True
 
 # Footer
 st.markdown("---")
