@@ -9,6 +9,8 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import json  # Import the json module
+import google.auth.transport.requests  # Import for making requests
+from google.oauth2 import service_account # Import service account
 
 # Setup OpenAI client
 client = openai.OpenAI(
@@ -35,27 +37,35 @@ def get_credentials_oauth():
         if not creds:
             #  Use json.loads to parse the service account info, and write to client_secret.json
             client_secret_info = json.loads(st.secrets["GOOGLE_SERVICE_ACCOUNT_JSON"])
-            with open(CLIENT_SECRET_FILE, 'w') as f:
-                json.dump(client_secret_info, f, indent=4) #indent for readbility
-            flow = InstalledAppFlow.from_client_secrets_file(
-                CLIENT_SECRET_FILE, SCOPES)
-            flow.redirect_uri = "http://localhost:8501"  # Or your Streamlit Cloud URL
-            auth_url, _ = flow.authorization_url()
-            st.session_state.auth_url = auth_url #save auth url to session
-            st.write(f'Please go to this URL to authorize: {auth_url}')
-            code = st.text_input("Enter the authorization code:")
-            if code:
+            # Check the type of client.  If it is a service account, use service account.
+            if client_secret_info['type'] == 'service_account':
                 try:
-                  token_response = flow.fetch_token(code=code)
-                  creds = flow.credentials
-                  with open(TOKEN_PATH, 'w') as token:
-                    token.write(creds.to_json())
-                  st.session_state.credentials = creds
+                    creds = service_account.Credentials.from_service_account_info(client_secret_info, scopes=SCOPES)
                 except Exception as e:
-                    st.error(f"Error fetching token: {e}")
+                    st.error(f"Error creating service account credentials: {e}")
                     return None
-            else:
-                return None #Stop if code is not provided
+            else: # Else use InstalledAppFlow
+                with open(CLIENT_SECRET_FILE, 'w') as f:
+                    json.dump(client_secret_info, f, indent=4) #indent for readability
+                flow = InstalledAppFlow.from_client_secrets_file(
+                    CLIENT_SECRET_FILE, SCOPES)
+                flow.redirect_uri = "http://localhost:8501"  # Or your Streamlit Cloud URL - important for the auth flow
+                auth_url, _ = flow.authorization_url()
+                st.session_state.auth_url = auth_url #save auth url to session
+                st.write(f'Please go to this URL to authorize: {auth_url}')
+                code = st.text_input("Enter the authorization code:")
+                if code:
+                    try:
+                        token_response = flow.fetch_token(code=code)
+                        creds = flow.credentials
+                        with open(TOKEN_PATH, 'w') as token:
+                            token.write(creds.to_json())
+                        st.session_state.credentials = creds
+                    except Exception as e:
+                        st.error(f"Error fetching token: {e}")
+                        return None
+                else:
+                    return None #Stop if code is not provided
     return creds
 
 def connect_to_sheet(creds):
