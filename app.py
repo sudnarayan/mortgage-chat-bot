@@ -131,17 +131,20 @@ try:
         with st.expander("🎯 Get personalized mortgage tips - Enter Name & Email"):
             name = st.text_input("Enter your full name:", key="name_input")
             email = st.text_input("Enter your email address:", key="email_input")
-            if name and email and "@" in email:
-                st.success(f"Thanks {name}! We've saved your info.")
-                st.session_state.email_captured = True
-                st.session_state.user_email = email
-                st.session_state.user_name = name
-                st.session_state.messages.append({"role": "assistant", "content": f"Thank you {name} for providing your email!"})
-                send_thank_you_email_oauth(name, email)
-            elif email and "@" not in email:
-                st.warning("Please enter a valid email address.")
-            elif name and not email:
-                st.warning("Please enter your email address.")
+            submit_button = st.button("Submit", key="submit_email_button")
+
+            if submit_button:
+                if name and email and "@" in email:
+                    st.success(f"Thanks {name}! We've saved your info.")
+                    st.session_state.email_captured = True
+                    st.session_state.user_email = email
+                    st.session_state.user_name = name
+                    st.session_state.messages.append({"role": "assistant", "content": f"Thank you {name} for providing your email!"})
+                    send_thank_you_email_oauth(name, email)
+                elif email and "@" not in email:
+                    st.warning("Please enter a valid email address.")
+                elif name and not email:
+                    st.warning("Please enter your email address.")
 
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
